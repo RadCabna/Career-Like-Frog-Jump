@@ -1,22 +1,20 @@
 import SwiftUI
 
 struct ThreatRow: View {
-    let threat: ThreatItem
+    let threat: RiverThreat
 
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.title3)
-                .foregroundStyle(AppColors.threatOrange)
+            DangerIconView(assetName: threat.dangerAssetName, size: 36)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(threat.title)
                     .font(.body.weight(.semibold))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(AppColors.primaryLabel)
 
                 Text(threat.detail)
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColors.secondaryLabel)
             }
 
             Spacer(minLength: 0)
@@ -27,6 +25,6 @@ struct ThreatRow: View {
 
 #Preview {
     List {
-        ThreatRow(threat: ThreatItem(title: "Burnout wave", detail: "Three late nights", severity: .high))
+        ThreatRow(threat: RiverThreat(kind: .burnoutBat))
     }
 }

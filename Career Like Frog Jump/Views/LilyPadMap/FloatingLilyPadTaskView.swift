@@ -34,11 +34,15 @@ struct FloatingLilyPadTaskView: View {
                 .foregroundStyle(.white.opacity(0.88))
                 .shadow(color: .black.opacity(0.55), radius: 2, y: 1)
 
-                if task.isDelegated {
-                    Text("Delegated")
-                        .font(.caption2.weight(.bold))
-                        .foregroundStyle(AppColors.gold)
-                        .shadow(color: .black.opacity(0.5), radius: 2, y: 1)
+                if !task.progressReviewStatusLabels.isEmpty {
+                    HStack(spacing: 8) {
+                        ForEach(task.progressReviewStatusLabels, id: \.self) { statusLabel in
+                            Text(statusLabel)
+                                .font(.caption2.weight(.bold))
+                                .foregroundStyle(statusLabelColor(for: statusLabel))
+                                .shadow(color: .black.opacity(0.5), radius: 2, y: 1)
+                        }
+                    }
                 }
 
                 if task.isOverdue {
@@ -64,10 +68,20 @@ struct FloatingLilyPadTaskView: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(.ultraThinMaterial)
+                .fill(AppColors.frostedPanel)
                 .shadow(color: .black.opacity(0.25), radius: 8, y: 4)
         )
         .offset(y: driftOffset)
+        .opacity(task.isDeleted ? 0.72 : 1)
+    }
+
+    private func statusLabelColor(for statusLabel: String) -> Color {
+        switch statusLabel {
+        case "Deleted": .secondary
+        case "Delegated": AppColors.gold
+        case "Completed": AppColors.neonGreen
+        default: .white.opacity(0.88)
+        }
     }
 
 }

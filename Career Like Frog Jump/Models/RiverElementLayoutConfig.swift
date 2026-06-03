@@ -21,13 +21,13 @@ enum RiverElementLayoutConfig {
     static var taskOffsets: [CGPoint] {
         [
             CGPoint(x: 0, y: -screenHeight * 0.072),
-            CGPoint(x: screenHeight * 0.04, y: -screenHeight * 0.162),
-            CGPoint(x: -screenHeight * 0.04, y: -screenHeight * 0.237),
-            CGPoint(x: screenHeight * 0.01, y: -screenHeight * 0.34),
-            CGPoint(x: screenHeight * 0.05, y: -screenHeight * 0.43),
-            CGPoint(x: -screenHeight * 0.08, y: -screenHeight * 0.5),
-            CGPoint(x: -screenHeight * 0.003, y: -screenHeight * 0.60),
-            CGPoint(x: screenHeight * 0.025, y: -screenHeight * 0.797)
+            CGPoint(x: screenHeight * 0.04, y: -screenHeight * 0.15),
+            CGPoint(x: -screenHeight * 0.04, y: -screenHeight * 0.2),
+            CGPoint(x: -screenHeight * 0.1, y: -screenHeight * 0.27),
+            CGPoint(x: screenHeight * 0.02, y: -screenHeight * 0.33),
+            CGPoint(x: screenHeight * 0.04, y: -screenHeight * 0.42),
+            CGPoint(x: -screenHeight * 0.1, y: -screenHeight * 0.48),
+            CGPoint(x: screenHeight * 0.0, y: -screenHeight * 0.56)
         ]
     }
 

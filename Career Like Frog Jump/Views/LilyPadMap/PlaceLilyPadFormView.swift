@@ -18,12 +18,3 @@ struct PlaceLilyPadFormView: View {
         }
     }
 }
-
-private extension LilyPadSheetMode {
-    var navigationTitle: String {
-        switch self {
-        case .create: "Place a Lily Pad"
-        case .edit: "Edit Lily Pad"
-        }
-    }
-}

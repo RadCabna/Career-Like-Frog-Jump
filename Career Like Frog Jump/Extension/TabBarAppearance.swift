@@ -3,9 +3,10 @@ import UIKit
 enum TabBarAppearance {
     static func configure() {
         let appearance = UITabBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor.black.withAlphaComponent(0.78)
-        appearance.shadowColor = UIColor.black.withAlphaComponent(0.45)
+        appearance.configureWithDefaultBackground()
+        appearance.backgroundColor = .black
+        appearance.backgroundEffect = nil
+        appearance.shadowColor = .clear
 
         let titleShadow = NSShadow()
         titleShadow.shadowColor = UIColor.black
@@ -24,9 +25,13 @@ enum TabBarAppearance {
         stacked.normal.iconColor = UIColor.white
         stacked.selected.iconColor = UIColor(red: 50 / 255, green: 205 / 255, blue: 50 / 255, alpha: 1)
 
-        UITabBar.appearance().standardAppearance = appearance
-        UITabBar.appearance().scrollEdgeAppearance = appearance
-        UITabBar.appearance().tintColor = UIColor(red: 50 / 255, green: 205 / 255, blue: 50 / 255, alpha: 1)
-        UITabBar.appearance().unselectedItemTintColor = UIColor.white
+        let tabBar = UITabBar.appearance()
+        tabBar.isTranslucent = true
+        tabBar.barTintColor = .black
+        tabBar.backgroundColor = .black
+        tabBar.standardAppearance = appearance
+        tabBar.scrollEdgeAppearance = appearance
+        tabBar.tintColor = UIColor(red: 50 / 255, green: 205 / 255, blue: 50 / 255, alpha: 1)
+        tabBar.unselectedItemTintColor = UIColor.white
     }
 }

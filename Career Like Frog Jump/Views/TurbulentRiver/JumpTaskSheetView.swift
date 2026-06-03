@@ -24,12 +24,12 @@ struct JumpTaskSheetView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(task.title)
                                 .font(.title3.weight(.bold))
-                                .foregroundStyle(.primary)
+                                .foregroundStyle(AppColors.primaryLabel)
                                 .fixedSize(horizontal: false, vertical: true)
 
                             Text(task.category.title)
                                 .font(.subheadline.weight(.medium))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(AppColors.secondaryLabel)
 
                             HStack(spacing: 6) {
                                 Image(systemName: "ladybug.fill")
@@ -45,7 +45,7 @@ struct JumpTaskSheetView: View {
                     .padding(16)
                     .background(
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                            .fill(Color.white)
                     )
 
                     AppTextField(
@@ -56,12 +56,15 @@ struct JumpTaskSheetView: View {
                 }
                 .padding(20)
             }
-            .background(Color(uiColor: .systemGroupedBackground))
+            .background(AppColors.lightGroupedBackground)
             .navigationTitle("Jump Task")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(AppColors.lightGroupedBackground, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel", action: onCancel)
+                        .foregroundStyle(AppColors.primaryLabel)
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
@@ -71,8 +74,11 @@ struct JumpTaskSheetView: View {
                 }
             }
         }
+        .presentationBackground(AppColors.lightGroupedBackground)
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
+        .dismissKeyboardOnTapOutside()
+        .scrollDismissesKeyboard(.interactively)
     }
 }
 

@@ -20,7 +20,7 @@ struct GoalTitleHeaderView: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.ultraThinMaterial)
+                .fill(AppColors.frostedPanel)
         )
     }
 }

@@ -2,9 +2,11 @@ import Foundation
 import CoreGraphics
 
 struct RiverJumpAnimation: Equatable, Identifiable {
-    let id = UUID()
     let fromSlotIndex: Int
     let toSlotIndex: Int
+    let sequence: UInt64
+
+    var id: UInt64 { sequence }
 }
 
 enum RiverJumpPhase {
@@ -14,12 +16,11 @@ enum RiverJumpPhase {
 }
 
 enum FrogJumpSprite {
-    static let frameSequence = ["frog1_1", "frog1_2", "frog1_3", "frog1_4", "frog1_1"]
-
-    static func frameName(for progress: CGFloat) -> String {
-        let clamped = max(0, min(progress, 1))
-        let index = min(Int(clamped * 4.999), frameSequence.count - 1)
-        return frameSequence[index]
+    static func frameName(elapsedInFlight: TimeInterval, flightFrames: [String]) -> String {
+        let frameDuration = RiverElementLayoutConfig.jumpDuration / Double(flightFrames.count)
+        guard frameDuration > 0, !flightFrames.isEmpty else { return "frog1_2" }
+        let index = min(Int(elapsedInFlight / frameDuration), flightFrames.count - 1)
+        return flightFrames[index]
     }
 }
 
@@ -69,6 +70,10 @@ enum RiverJumpTimeline {
         guard elapsed >= preDelay, duration > 0 else { return 0 }
 
         return CGFloat(min(max((elapsed - preDelay) / duration, 0), 1))
+    }
+
+    static func elapsedInFlight(elapsed: TimeInterval) -> TimeInterval {
+        max(0, elapsed - RiverElementLayoutConfig.jumpPreDelay)
     }
 
     static var isComplete: (TimeInterval) -> Bool {

@@ -15,7 +15,7 @@ enum AppTab: String, CaseIterable, Identifiable {
         case .lilyPadMap: "Lily Pad Map"
         case .threatRadar: "Threat Radar"
         case .frogEvolution: "Frog Evolution"
-        case .jumpStatistics: "Jump Statistics"
+        case .jumpStatistics: "Jump Analytics"
         }
     }
 

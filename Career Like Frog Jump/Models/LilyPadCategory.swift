@@ -31,6 +31,23 @@ enum LilyPadCategory: String, CaseIterable, Identifiable, Codable {
         }
     }
 
+    /// Compact label for Support Category picker (fits one line with checkmark).
+    var pickerTitleLine: String {
+        switch self {
+        case .hardSkills: "Hard Skills (Lily)"
+        case .networking: "Networking (Log)"
+        case .projects: "Projects (Turtle)"
+        }
+    }
+
+    var pickerSubtitleLine: String {
+        switch self {
+        case .hardSkills: "Course, book, test"
+        case .networking: "Conference, mentor, email"
+        case .projects: "Portfolio, task, commit"
+        }
+    }
+
     var systemImage: String {
         switch self {
         case .hardSkills: "book.fill"
@@ -44,6 +61,15 @@ enum LilyPadCategory: String, CaseIterable, Identifiable, Codable {
         case .hardSkills: "lily"
         case .networking: "log"
         case .projects: "tortle"
+        }
+    }
+
+    /// Threat sector closest to the frog’s current lily pad focus.
+    var nearestThreatKind: ThreatKind {
+        switch self {
+        case .hardSkills: .deadlineCrocodile
+        case .networking: .doubtSnake
+        case .projects: .micromanagementEagle
         }
     }
 }

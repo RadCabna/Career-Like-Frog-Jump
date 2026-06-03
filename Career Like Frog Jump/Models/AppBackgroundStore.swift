@@ -6,6 +6,8 @@ enum AppBackgroundKind: Equatable {
 }
 
 enum AppBackgroundStore {
+    static let modalFormBackground = AppBackgroundKind.sky(bottomImageName: "cityBG")
+
     private static var skyBottomImages: [AppTab: String] = [:]
 
     static func kind(for tab: AppTab) -> AppBackgroundKind {

@@ -8,12 +8,23 @@ struct JumpStat: Identifiable {
 
 @MainActor
 final class JumpStatisticsViewModel: ObservableObject {
-    @Published var stats: [JumpStat] = [
-        JumpStat(label: "Jumps this week", value: "14"),
-        JumpStat(label: "Longest streak", value: "9 days"),
-        JumpStat(label: "Threats dodged", value: "11"),
-        JumpStat(label: "Shields activated", value: "3")
-    ]
+    @Published var stats: [JumpStat] = []
+    @Published var weeklyJumpWeeks: [WeeklyJumpDataPoint] = []
+    @Published var categorySlices: [CategoryEffortSlice] = []
 
-    @Published var weeklyJumpCounts: [Int] = [2, 3, 1, 4, 2, 1, 1]
+    func refresh(from store: CareerPathStore) {
+        weeklyJumpWeeks = JumpStatisticsAnalytics.weeklyJumpPoints(
+            from: store.jumpCompletionTimestamps
+        )
+        categorySlices = JumpStatisticsAnalytics.categoryEffortSlices(
+            currentTasks: store.tasks,
+            completedGoals: store.completedGoals
+        )
+        stats = [
+            JumpStat(label: "Jumps completed", value: "\(store.jumpsCompleted)"),
+            JumpStat(label: "Threats beaten", value: "\(store.threatsDefeated)"),
+            JumpStat(label: "Goals completed", value: "\(store.completedGoals.count)"),
+            JumpStat(label: "Fly coins", value: "\(store.flyCoins)")
+        ]
+    }
 }

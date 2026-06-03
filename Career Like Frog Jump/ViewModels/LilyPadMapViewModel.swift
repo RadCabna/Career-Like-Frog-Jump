@@ -10,6 +10,13 @@ enum LilyPadSheetMode: Identifiable, Equatable {
         case .edit(let task): task.id.uuidString
         }
     }
+
+    var navigationTitle: String {
+        switch self {
+        case .create: "Place a Lily Pad"
+        case .edit(let task): task.isCompleted ? "Task details" : "Edit Lily Pad"
+        }
+    }
 }
 
 @MainActor

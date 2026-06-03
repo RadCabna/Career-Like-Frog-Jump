@@ -12,7 +12,7 @@ struct RiverProgressView: View {
                 Spacer()
                 Text("\(completedPads)/\(totalPads) lily pads")
                     .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColors.secondaryLabel)
             }
 
             HStack(spacing: 8) {
@@ -27,7 +27,7 @@ struct RiverProgressView: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                .fill(AppColors.textFieldFill)
         )
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("River progress")

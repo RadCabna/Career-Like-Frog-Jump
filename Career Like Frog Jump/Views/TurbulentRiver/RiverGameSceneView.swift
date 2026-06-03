@@ -2,10 +2,9 @@ import SwiftUI
 
 struct RiverGameSceneView: View {
     @EnvironmentObject private var store: CareerPathStore
+    @EnvironmentObject private var threatRadarViewModel: ThreatRadarViewModel
 
     private let layout = RiverSceneLayout()
-
-    @State private var jumpStartDate: Date?
 
     private var displayedSlots: [RiverLayoutSlot] {
         if RiverElementLayoutConfig.showsAllLayoutSlots {
@@ -22,19 +21,40 @@ struct RiverGameSceneView: View {
         }
     }
 
+    private var effectiveFrogSlotIndex: Int {
+        guard store.frogSlotIndex >= 0, !displayedSlots.isEmpty else { return -1 }
+        return min(store.frogSlotIndex, displayedSlots.count - 1)
+    }
+
     private var showsFrogOnHomePad: Bool {
-        store.frogSlotIndex < 0 && store.jumpAnimation == nil
+        store.frogSlotIndex < 0 && store.activeJumpPlayback == nil
     }
 
     private var frogTaskSlot: RiverLayoutSlot? {
-        guard store.frogSlotIndex >= 0 else { return nil }
-        return displayedSlots.first { $0.index == store.frogSlotIndex }
+        guard effectiveFrogSlotIndex >= 0 else { return nil }
+        return displayedSlots.first { $0.index == effectiveFrogSlotIndex }
     }
 
     private var backgroundTaskSlots: [RiverLayoutSlot] {
         displayedSlots.filter { slot in
-            store.jumpAnimation != nil || slot.index != store.frogSlotIndex
+            store.activeJumpPlayback != nil || slot.index != effectiveFrogSlotIndex
         }
+    }
+
+    private var restingFrogSlotIndex: Int? {
+        guard store.activeJumpPlayback == nil else { return nil }
+        if showsFrogOnHomePad { return -1 }
+        if frogTaskSlot != nil { return effectiveFrogSlotIndex }
+        return nil
+    }
+
+    private var padRippleStyle: PadRippleWavesView.Style? {
+        guard restingFrogSlotIndex != nil else { return nil }
+        if store.isProgressFrozen { return .lifebuoy }
+        if threatRadarViewModel.isThreatApproaching || threatRadarViewModel.activeThreat != nil {
+            return .threat
+        }
+        return nil
     }
 
     var body: some View {
@@ -57,14 +77,6 @@ struct RiverGameSceneView: View {
                     )
                 }
             }
-            .onChange(of: store.jumpAnimation?.id) { _, newID in
-                if newID != nil {
-                    jumpStartDate = Date()
-                    scheduleJumpCompletion()
-                } else {
-                    jumpStartDate = nil
-                }
-            }
     }
 
     private var riverSceneLayer: some View {
@@ -83,71 +95,41 @@ struct RiverGameSceneView: View {
                 .position(layout.supportPoint(forSlotIndex: slot.index))
             }
 
+            if let slotIndex = restingFrogSlotIndex, let rippleStyle = padRippleStyle {
+                PadRippleWavesView(style: rippleStyle)
+                    .position(layout.supportPoint(forSlotIndex: slotIndex))
+            }
+
             if showsFrogOnHomePad {
-                RiverFrogHomePadView(showsFrog: true)
-                    .position(layout.supportPoint(forSlotIndex: -1))
-            } else if let frogSlot = frogTaskSlot, store.jumpAnimation == nil {
+                RiverFrogHomePadView(
+                    showsFrog: true,
+                    frogAssetName: store.restingFrogAssetName
+                )
+                .position(layout.supportPoint(forSlotIndex: -1))
+            } else if let frogSlot = frogTaskSlot, store.activeJumpPlayback == nil {
                 RiverLayoutSlotView(
                     slot: frogSlot,
                     showsRestingFrog: true,
+                    frogAssetName: store.restingFrogAssetName,
                     showsIndexLabel: RiverElementLayoutConfig.showsAllLayoutSlots
                 )
                 .position(layout.supportPoint(forSlotIndex: frogSlot.index))
             }
 
-            if let jump = store.jumpAnimation, let startDate = jumpStartDate {
-                TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { timeline in
-                    let elapsed = timeline.date.timeIntervalSince(startDate)
-                    let phase = RiverJumpTimeline.phase(elapsed: elapsed)
-
-                    Group {
-                        switch phase {
-                        case .preDelay:
-                            RiverJumpingFrogView(imageName: "frog1_5")
-                                .position(layout.frogPoint(forSlotIndex: jump.fromSlotIndex))
-
-                        case .flying:
-                            let progress = RiverJumpTimeline.flightProgress(elapsed: elapsed)
-                            RiverJumpingFrogView(imageName: FrogJumpSprite.frameName(for: progress))
-                                .position(jumpingFrogPoint(progress: progress, jump: jump))
-
-                        case .landingHold:
-                            if RiverElementLayoutConfig.jumpLandingHold > 0 {
-                                RiverJumpingFrogView(imageName: "frog1_1")
-                                    .position(layout.frogPoint(forSlotIndex: jump.toSlotIndex))
-                            }
-                        }
-                    }
-                }
+            if let playback = store.activeJumpPlayback {
+                RiverJumpAnimationLayer(
+                    playback: playback,
+                    layout: layout,
+                    onComplete: store.completeJumpPlaybackIfNeeded
+                )
+                .id(playback.animation.sequence)
+                .zIndex(10)
             }
         }
         .frame(width: AppScreenMetrics.width, height: AppScreenMetrics.height)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private func jumpingFrogPoint(progress: CGFloat, jump: RiverJumpAnimation) -> CGPoint {
-        let from = layout.frogPoint(forSlotIndex: jump.fromSlotIndex)
-        let to = layout.frogPoint(forSlotIndex: jump.toSlotIndex)
-        let arcHeight = RiverJumpArc.arcHeight(from: from, to: to)
-
-        return RiverJumpArc.point(
-            progress: progress,
-            from: from,
-            to: to,
-            arcHeight: arcHeight
-        )
-    }
-
-    private func scheduleJumpCompletion() {
-        let duration = RiverElementLayoutConfig.jumpTotalDuration
-
-        Task { @MainActor in
-            try? await Task.sleep(for: .seconds(duration))
-            guard store.jumpAnimation != nil else { return }
-            store.finishJumpAnimation()
-            jumpStartDate = nil
-        }
-    }
 }
 
 private struct RiverLayoutSlot: Identifiable {
@@ -160,6 +142,7 @@ private struct RiverLayoutSlot: Identifiable {
 private struct RiverLayoutSlotView: View {
     let slot: RiverLayoutSlot
     let showsRestingFrog: Bool
+    var frogAssetName: String = "frog1_1"
     let showsIndexLabel: Bool
 
     private var wobbleIndex: Int {
@@ -171,7 +154,7 @@ private struct RiverLayoutSlotView: View {
             RiverFloatingSupportView(task: slot.task)
 
             if showsRestingFrog {
-                Image("frog1_5")
+                Image(frogAssetName)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: RiverElementLayoutConfig.frogWidth)
@@ -198,10 +181,12 @@ private struct RiverLayoutSlotView: View {
 #Preview("Scene") {
     RiverGameSceneView()
         .environmentObject(CareerPathStore.previewWithGoalAndTasks)
+        .environmentObject(ThreatRadarViewModel())
         .tabScreenBackground(.river)
 }
 
 #Preview("Tab") {
     MainTabView()
         .environmentObject(CareerPathStore.previewWithGoalAndTasks)
+        .environmentObject(ThreatRadarViewModel())
 }

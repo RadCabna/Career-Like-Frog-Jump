@@ -3,7 +3,10 @@ import UIKit
 
 struct TabBarIconShadowModifier: ViewModifier {
     func body(content: Content) -> some View {
-        content.background(TabBarShadowAnchorView())
+        content.background {
+            TabBarShadowAnchorView()
+                .allowsHitTesting(false)
+        }
     }
 }
 

@@ -3,10 +3,18 @@ import SwiftUI
 struct PlaceLilyPadFormContent: View {
     let title: String
     @Binding var draft: PlaceLilyPadDraft
+    var microSteps: [String] = []
+    var completionComment: String?
     let onTitleChange: (String) -> Void
     let onCancel: () -> Void
     let onSave: () -> Void
     let isSaveEnabled: Bool
+
+    private var filledMicroSteps: [String] {
+        microSteps
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+    }
 
     var body: some View {
         Form {
@@ -32,9 +40,37 @@ struct PlaceLilyPadFormContent: View {
                                 : .secondary
                         )
                 }
-                .listRowBackground(Color.clear)
-            } header: {
-                Text(title)
+                .listRowBackground(Color.white)
+            }
+
+            if let completionComment {
+                Section("Comment") {
+                    Text(completionComment)
+                        .font(.subheadline)
+                        .foregroundStyle(AppColors.primaryLabel)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .listRowBackground(Color.white)
+            }
+
+            if !filledMicroSteps.isEmpty {
+                Section("Micro-steps") {
+                    ForEach(Array(filledMicroSteps.enumerated()), id: \.offset) { index, step in
+                        HStack(alignment: .top, spacing: 10) {
+                            Text("\(index + 1).")
+                                .font(.subheadline.weight(.bold))
+                                .foregroundStyle(AppColors.neonGreen)
+                                .frame(width: 22, alignment: .leading)
+
+                            Text(step)
+                                .font(.subheadline)
+                                .foregroundStyle(AppColors.primaryLabel)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(.vertical, 2)
+                    }
+                }
+                .listRowBackground(Color.white)
             }
 
             Section("Support Category") {
@@ -45,6 +81,7 @@ struct PlaceLilyPadFormContent: View {
                     ) {
                         draft.category = category
                     }
+                    .listRowBackground(Color.white)
                 }
             }
 
@@ -54,6 +91,7 @@ struct PlaceLilyPadFormContent: View {
                     selection: $draft.deadline,
                     displayedComponents: [.date, .hourAndMinute]
                 )
+                .listRowBackground(Color.white)
             }
 
             Section("Importance") {
@@ -63,13 +101,15 @@ struct PlaceLilyPadFormContent: View {
                     }
                 }
                 .pickerStyle(.segmented)
+                .listRowBackground(Color.white)
 
                 HStack {
                     Text("Element size")
                     Spacer()
                     Text(importanceSizeLabel)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(AppColors.secondaryLabel)
                 }
+                .listRowBackground(Color.white)
 
                 HStack {
                     Text("Fly coin reward")
@@ -78,11 +118,16 @@ struct PlaceLilyPadFormContent: View {
                         .fontWeight(.semibold)
                         .foregroundStyle(AppColors.gold)
                 }
+                .listRowBackground(Color.white)
             }
         }
+        .scrollContentBackground(.hidden)
+        .background(Color.white)
+        .scrollDismissesKeyboard(.interactively)
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+        .toolbarBackground(Color.white, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button("Cancel", action: onCancel)
@@ -119,12 +164,16 @@ private struct CategorySelectionRow: View {
                     .frame(width: 36, height: 36)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("\(category.title) (\(category.supportMetaphor))")
+                    Text(category.pickerTitleLine)
                         .font(.body.weight(.semibold))
-                        .foregroundStyle(.primary)
-                    Text(category.subtitle)
+                        .foregroundStyle(AppColors.primaryLabel)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.9)
+                    Text(category.pickerSubtitleLine)
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(AppColors.secondaryLabel)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
                 Spacer(minLength: 0)

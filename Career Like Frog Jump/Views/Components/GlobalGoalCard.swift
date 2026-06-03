@@ -18,7 +18,8 @@ struct GlobalGoalCard: View {
 
             Text(title)
                 .font(.title3.weight(.semibold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(.white)
+                .riverTextShadow()
 
             ProgressView(value: progress)
                 .tint(AppColors.gold)
@@ -26,7 +27,7 @@ struct GlobalGoalCard: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                .fill(AppColors.frostedPanel)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)

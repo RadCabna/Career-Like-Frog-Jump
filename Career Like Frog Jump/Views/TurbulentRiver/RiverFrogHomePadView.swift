@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RiverFrogHomePadView: View {
     var showsFrog: Bool = true
+    var frogAssetName: String = "frog1_1"
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -11,7 +12,7 @@ struct RiverFrogHomePadView: View {
                 .frame(width: RiverElementLayoutConfig.lilyPadBaseWidth)
 
             if showsFrog {
-                Image("frog1_5")
+                Image(frogAssetName)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: RiverElementLayoutConfig.frogWidth)

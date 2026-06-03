@@ -8,7 +8,6 @@ struct RiverJumpingFrogView: View {
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(width: RiverElementLayoutConfig.frogWidth)
-            .id(imageName)
     }
 }
 

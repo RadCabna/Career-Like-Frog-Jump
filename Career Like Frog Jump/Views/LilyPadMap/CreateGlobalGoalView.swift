@@ -11,7 +11,8 @@ struct CreateGlobalGoalView: View {
 
             AppTextField(
                 title: "Goal Name",
-                placeholder: "Senior Developer, Own startup, Relocation…",
+                placeholder: "Senior Dev, Startup, Relocation…",
+                placeholderFont: .subheadline,
                 text: Binding(
                     get: { store.goalCreationDraft },
                     set: { store.updateGoalDraft($0) }
@@ -28,10 +29,11 @@ struct CreateGlobalGoalView: View {
             }
             .disabled(store.goalCreationDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
         }
+        .dismissKeyboardOnTapOutside()
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.ultraThinMaterial)
+                .fill(AppColors.frostedPanel)
                 .shadow(color: .black.opacity(0.25), radius: 10, y: 4)
         )
     }

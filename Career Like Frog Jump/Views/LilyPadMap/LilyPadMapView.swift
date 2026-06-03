@@ -12,6 +12,13 @@ struct LilyPadMapView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             List {
+                if store.isBacklogCleanupActive {
+                    BacklogCleanupBannerView()
+                        .listRowInsets(listRowInsets)
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                }
+
                 if store.shouldShowInlineGoalForm {
                     CreateGlobalGoalView()
                         .listRowInsets(listRowInsets)
@@ -28,7 +35,7 @@ struct LilyPadMapView: View {
                 }
 
                 if store.hasGlobalGoal {
-                    if store.tasks.isEmpty {
+                    if store.activeTasks.isEmpty {
                         Text("Tap + to add your first task.")
                             .font(.subheadline)
                             .foregroundStyle(.white.opacity(0.92))
@@ -40,7 +47,7 @@ struct LilyPadMapView: View {
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.clear)
                     } else {
-                        ForEach(Array(store.tasks.enumerated()), id: \.element.id) { index, task in
+                        ForEach(Array(store.activeTasks.enumerated()), id: \.element.id) { index, task in
                             FloatingLilyPadTaskView(
                                 task: task,
                                 driftOffset: driftOffset(for: index)
@@ -58,12 +65,14 @@ struct LilyPadMapView: View {
                                     Label("Delete", systemImage: "trash")
                                 }
 
-                                Button {
-                                    store.delegateTask(task)
-                                } label: {
-                                    Label("Delegate", systemImage: "person.crop.circle.badge.plus")
+                                if !task.isCompleted {
+                                    Button {
+                                        store.delegateTask(task)
+                                    } label: {
+                                        Label("Delegate", systemImage: "person.crop.circle.badge.plus")
+                                    }
+                                    .tint(AppColors.gold)
                                 }
-                                .tint(AppColors.gold)
                             }
                         }
                     }
@@ -71,30 +80,29 @@ struct LilyPadMapView: View {
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
+            .background(Color.clear)
             .contentMargins(.top, 12, for: .scrollContent)
-            .contentMargins(.bottom, store.hasGlobalGoal ? 88 : 24, for: .scrollContent)
+            .contentMargins(.bottom, showsAddTaskButton ? 88 : 24, for: .scrollContent)
 
-            if store.hasGlobalGoal {
+            if showsAddTaskButton {
                 RiverAddTaskButton(action: store.presentTaskCreation)
                 .padding(.bottom, RiverElementLayoutConfig.frogPadBottomMargin)
                 .safeAreaPadding(.bottom, 8)
             }
         }
         .tabScreenBackground(.river)
+        .dismissKeyboardOnTapOutside()
         .navigationTitle(AppTab.lilyPadMap.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
-        .sheet(item: $sheetViewModel.activeSheet) { mode in
-            NavigationStack {
-                PlaceLilyPadFormContent(
-                    title: mode.navigationTitle,
-                    draft: $sheetViewModel.draft,
-                    onTitleChange: sheetViewModel.updateTitleDraft,
-                    onCancel: sheetViewModel.cancelSheet,
-                    onSave: { sheetViewModel.saveDraft(for: mode, store: store) },
-                    isSaveEnabled: sheetViewModel.draft.isValid
-                )
-            }
+        .fullScreenCover(item: $sheetViewModel.activeSheet) { mode in
+            LilyPadTaskDetailFullScreenView(
+                sheetViewModel: sheetViewModel,
+                mode: mode,
+                microSteps: microSteps(for: mode),
+                completionComment: completionComment(for: mode)
+            )
+            .environmentObject(store)
         }
         .fullScreenCover(isPresented: $store.isPresentingTaskCreation) {
             PlaceLilyPadFullScreenView()
@@ -107,18 +115,25 @@ struct LilyPadMapView: View {
         }
     }
 
+    private var showsAddTaskButton: Bool {
+        store.hasGlobalGoal && store.canAddMoreTasks
+    }
+
     private func driftOffset(for index: Int) -> CGFloat {
         let direction: CGFloat = index.isMultiple(of: 2) ? 1 : -1
         return direction * driftPhase * 0.35
     }
-}
 
-private extension LilyPadSheetMode {
-    var navigationTitle: String {
-        switch self {
-        case .create: "Place a Lily Pad"
-        case .edit: "Edit Lily Pad"
-        }
+    private func microSteps(for mode: LilyPadSheetMode) -> [String] {
+        guard case .edit(let task) = mode else { return [] }
+        return store.tasks.first(where: { $0.id == task.id })?.microSteps ?? task.microSteps
+    }
+
+    private func completionComment(for mode: LilyPadSheetMode) -> String? {
+        guard case .edit(let task) = mode else { return nil }
+        guard let raw = store.tasks.first(where: { $0.id == task.id })?.completionComment else { return nil }
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
 }
 
@@ -126,5 +141,6 @@ private extension LilyPadSheetMode {
     NavigationStack {
         LilyPadMapView()
             .environmentObject(CareerPathStore())
+            .environmentObject(ThreatRadarViewModel())
     }
 }

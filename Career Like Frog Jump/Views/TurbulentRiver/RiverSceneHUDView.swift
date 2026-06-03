@@ -5,11 +5,10 @@ struct RiverSceneHUDView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            let insets = geometry.safeAreaInsets
             let horizontalPadding = RiverElementLayoutConfig.hudEdgePadding
             let verticalPadding = RiverElementLayoutConfig.hudVerticalPadding
 
-            VStack(spacing: 0) {
+            VStack(spacing: 8) {
                 HStack(alignment: .top) {
                     RiverHeartsView(halfHearts: store.halfHearts)
 
@@ -18,18 +17,22 @@ struct RiverSceneHUDView: View {
                     RiverFlyCounterView(count: store.flyCoins)
                 }
 
+                if let goalTitle = store.globalGoalTitle, store.hasGlobalGoal {
+                    RiverGoldenGoalView(title: goalTitle)
+                }
+
                 Spacer(minLength: 0)
 
                 HStack {
                     Spacer(minLength: 0)
 
                     RiverJumpButtonView(
-                        isEnabled: !store.incompleteTasks.isEmpty && !store.isJumpAnimating,
-                        action: store.presentJumpTask
+                        isEnabled: (store.jumpTargetTask != nil || store.canCelebrateGoalAchievement) && !store.isJumpAnimating,
+                        celebrationPulse: store.canCelebrateGoalAchievement,
+                        action: store.handleJumpButtonTap
                     )
                 }
             }
-//            .padding(.top, insets.top + verticalPadding)
             .padding(.bottom, verticalPadding)
             .padding(.horizontal, horizontalPadding)
             .frame(width: geometry.size.width, height: geometry.size.height)
