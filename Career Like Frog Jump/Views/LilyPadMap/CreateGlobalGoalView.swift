@@ -27,9 +27,9 @@ struct CreateGlobalGoalView: View {
                     .frame(height: 48)
                     .background(AppColors.neonGreen, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
+            .buttonStyle(.plain)
             .disabled(store.goalCreationDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
         }
-        .dismissKeyboardOnTapOutside()
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)

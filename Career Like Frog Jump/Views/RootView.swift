@@ -17,6 +17,7 @@ struct RootView: View {
             .environmentObject(careerPathStore)
             .environmentObject(threatRadarViewModel)
             .onAppear {
+                KeyboardDismiss.installGlobalTapToDismissIfNeeded()
                 threatRadarViewModel.attach(store: careerPathStore)
             }
             .onChange(of: scenePhase) { _, phase in
